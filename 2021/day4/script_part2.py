@@ -1,5 +1,5 @@
 """
-Play all boards, and calculate thier scores and finishing positions
+Play a game of bingo from a file. For all boards, calculate their scores and finishing positions
 """
 from io import StringIO
 import pandas as pd
@@ -30,7 +30,6 @@ class BingoBoard:
             self.has_won = self.check_is_winner()
 
     def calculate_score(self) -> int:
-        # print(test_sim.boards[2].board[test_sim.boards[2].board_mask.isin([False])].sum().sum())
         score = int(self.board[self.board_mask.isin([False])].sum().sum()) * self.last_number_called
         return score
 
@@ -39,7 +38,7 @@ class Simulation:
 
     def __init__(self, input_path: str):
         self.number_draw = self.generate_number_draw(input_path)
-        self.boards = self.generate_boards(input_path)
+        self.playing_boards = self.generate_boards(input_path)
 
     def generate_boards(self, input_path: str) -> list[BingoBoard]:
         #example from https://stackoverflow.com/questions/62626392/read-in-txt-file-into-multiple-dataframes-split-by-empty-gaps-between-the-data
@@ -70,13 +69,13 @@ class Simulation:
         winning_boards = []
         for draw in self.number_draw:
             print(f"Checking: {draw}")
-            for board in list(self.boards):
+            for board in list(self.playing_boards):
                 board.check_number(int(draw))
                 if board.has_won:
                     winning_boards.append(board)
-                    self.boards.remove(board)
+                    self.playing_boards.remove(board)
 
-        #for each winning board, calculate its score
+        #for each winning board; calculate its score, then generate the DataFrame
         d = {"finish_position": [], "score": [], "board" : []}
         for i, board in enumerate(winning_boards):
             d["finish_position"].append(i + 1)
