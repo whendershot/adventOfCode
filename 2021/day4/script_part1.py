@@ -1,6 +1,9 @@
+"""
+Find which board wins in bingo first
+"""
 from io import StringIO
 import pandas as pd
-# import numpy as np
+
 
 class BingoBoard:
     
@@ -12,9 +15,10 @@ class BingoBoard:
     def check_is_winner(self) -> bool:
         row_win = self.board_mask.all(axis=0).any()
         col_win = self.board_mask.all(axis=1).any()
-        back_cross_win = self.board_mask[0][0] & self.board_mask[1][1] & self.board_mask[2][2] & self.board_mask[3][3] & self.board_mask[4][4]
-        forward_cross_win = self.board_mask[0][4] & self.board_mask[1][3] & self.board_mask[2][2] & self.board_mask[3][1] & self.board_mask[4][0]
-        return row_win | col_win | back_cross_win | forward_cross_win
+        #diagonals do not count in this version, can uncomment to add them back in of course
+        # back_cross_win = self.board_mask[0][0] & self.board_mask[1][1] & self.board_mask[2][2] & self.board_mask[3][3] & self.board_mask[4][4]
+        # forward_cross_win = self.board_mask[0][4] & self.board_mask[1][3] & self.board_mask[2][2] & self.board_mask[3][1] & self.board_mask[4][0]
+        return row_win | col_win #| back_cross_win | forward_cross_win
 
     def update(self) -> None:
         pass
@@ -22,9 +26,13 @@ class BingoBoard:
     def check_number(self, value: int) -> None:
         temp_mask = self.board.isin([value])
         self.board_mask = self.board_mask | temp_mask
+        self.last_number_called = value
 
     def calculate_score(self) -> int:
-        pass
+        # print(test_sim.boards[2].board[test_sim.boards[2].board_mask.isin([False])].sum().sum())
+        score = int(self.board[self.board_mask.isin([False])].sum().sum()) * self.last_number_called
+        return score
+
 
 class Simulation:
 
@@ -59,9 +67,9 @@ class Simulation:
         return number_draw
 
     def run_simulation(self) -> BingoBoard:
+        winning_boards =[]
         for draw in self.number_draw:
             print(f"Checking: {draw}")
-            winning_boards =[]
             for board in self.boards:
                 board.check_number(int(draw))
                 if board.check_is_winner():
@@ -70,27 +78,15 @@ class Simulation:
                 #have at least one winning board
                 break
 
-        #for each winning borad calulate its score
+        #for each winning board, calculate its score
         for board in winning_boards:
             print(board.board)
             print(board.board_mask)
+            print(f"Score: {board.calculate_score()}")
         #return the board with the highest score and its score
         
-test_sim = Simulation("test1.txt")
+test_sim = Simulation("input.txt")
 print(test_sim.number_draw)
-# print(test_sim.boards)
-# print(test_sim.boards[0].is_winner)
-# print(test_sim.boards[1].board)
-# print(test_sim.boards[2].board_mask)
-
-# test_sim.boards[0].check_number(23)
-# test_sim.boards[0].check_number(4)
-# test_sim.boards[2].check_number(24)
-# print(test_sim.boards[0].board_mask)
-
 print("---Running Simulation---")
 test_sim.run_simulation()
-# print(test_sim.boards[0].board_mask)
-# print(test_sim.boards[1].board_mask)
-# print(test_sim.boards[2].board_mask)
-print()
+
